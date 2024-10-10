@@ -1,4 +1,4 @@
-const Yojana = require("../models/YojanaRegistration.js");
+const Yojana = require("../models/Yojana");
 
 exports.registerYojana = async (req, res) => {
   const {

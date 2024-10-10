@@ -19,14 +19,14 @@ const YojanaSchema = new mongoose.Schema({
 
   // Address Information
   address: {
-    state: { type: String, required: true },
-    city: { type: String, required: true },
-    village: { type: String, required: true },
-    post: { type: String, required: true },
-    policeStation: { type: String, required: true },
-    tehsil: { type: String, required: true },
-    district: { type: String, required: true },
-    pincode: { type: String, required: true, match: /^\d{6}$/ },
+    state: { type: String, required: false },
+    city: { type: String, required: false },
+    village: { type: String, required: false },
+    post: { type: String, required: false },
+    policeStation: { type: String, required: false },
+    tehsil: { type: String, required: false },
+    district: { type: String, required: false },
+    pincode: { type: String, required: false, match: /^\d{6}$/ },
   },
   correspondenceAddress: {
     village: { type: String },
