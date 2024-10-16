@@ -13,7 +13,7 @@ exports.register = async (req, res) => {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 12);
     user = new User({ name, email, password: hashedPassword, role });
     await user.save();
 
@@ -25,12 +25,13 @@ exports.register = async (req, res) => {
       }
     );
 
-    res.status(201).json({ message: "user created" , token });
+    res.status(201).json({ message: "User registered successfully", token });
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
   }
 };
 
+// Login user
 exports.login = async (req, res) => {
   const { email, password } = req.body;
 
@@ -53,12 +54,13 @@ exports.login = async (req, res) => {
       }
     );
 
-    res.json({ message: "Logged in Successfull", token });
+    res.status(200).json({ message: "Logged in successfully", token });
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
   }
 };
 
+// Logout user
 exports.logout = async (req, res) => {
   const token = req.header("Authorization")?.replace("Bearer ", "");
 
@@ -67,9 +69,16 @@ exports.logout = async (req, res) => {
   }
 
   try {
-    await new Token({ token }).save();
+    jwt.verify(token, process.env.JWT_SECRET);
+
+    await new Token({
+      token,
+      expiresAt: new Date(Date.now() + 3600000),
+    }).save();
+
     res.status(200).json({ message: "User logged out successfully." });
   } catch (error) {
-    res.status(500).json({ message: "Logout failed", error });
+    console.error("Logout failed:", error.message);
+    res.status(400).json({ message: "Invalid or expired token." });
   }
 };

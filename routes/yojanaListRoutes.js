@@ -5,14 +5,16 @@ const {
   updateRegistration,
   addRegistration,
 } = require("../controllers/yojanaListController");
+const { verifyToken } = require("../middleware/authMiddleware");
+
 const router = express.Router();
 
-router.get("/", getRegistrations);
+router.get("/", verifyToken, getRegistrations);
 
-router.get("/:id", getRegistrationById);
+router.get("/:id", verifyToken, getRegistrationById);
 
-router.put("/:id", updateRegistration);
+router.put("/:id", verifyToken, updateRegistration);
 
-router.post("/add", addRegistration);
+router.post("/add", verifyToken, addRegistration);
 
 module.exports = router;
