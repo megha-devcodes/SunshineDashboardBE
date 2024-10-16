@@ -25,9 +25,12 @@ exports.getRegistrations = async (req, res) => {
 
     const total = await YojanaRegistration.countDocuments(searchQuery);
 
+    const sortOrder = order === "desc" ? -1 : 1;
+    const sortCriteria = { [sortBy]: sortOrder };
+
     const registrations = await YojanaRegistration.find(searchQuery)
       .populate("supervisorId", "name mobileNumber")
-      .sort({ [sortBy]: order === "desc" ? -1 : 1 })
+      .sort(sortCriteria)
       .skip((pageNumber - 1) * pageSize)
       .limit(pageSize)
       .lean();
