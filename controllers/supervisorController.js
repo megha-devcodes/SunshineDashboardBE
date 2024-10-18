@@ -1,21 +1,39 @@
 const Supervisor = require("../models/Supervisor");
+const User = require("../models/User");
+const UserFactory = require("../factories/UserFactory");
 
-const generateRegisterId = () => {
-  const prefix = "SUP";
-  const randomNumber = Math.floor(100000 + Math.random() * 900000);
-  return `${prefix}-${randomNumber}`;
+exports.getSupervisorProfile = async (req, res) => {
+  try {
+    const supervisor = await Supervisor.findOne({ userId: req.user.userID });
+    if (!supervisor) {
+      return res.status(404).json({ message: "Supervisor profile not found." });
+    }
+
+    const user = await User.findOne({ userID: req.user.userID });
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    const supervisorProfile = {
+      ...supervisor._doc,
+      name: user.name,
+      email: user.email,
+    };
+
+    res.status(200).json(supervisorProfile);
+  } catch (error) {
+    console.error("Error fetching supervisor profile:", error);
+    res.status(500).json({ message: "Server error", error });
+  }
 };
 
-exports.createSupervisor = async (req, res) => {
+exports.updateSupervisor = async (req, res) => {
   const {
-    userId,
-    name,
     fatherName,
     motherName,
     state,
     city,
     mobileNumber,
-    email,
     registrationFee,
     commission,
     earningCommission,
@@ -28,41 +46,45 @@ exports.createSupervisor = async (req, res) => {
     totalYojanaReg,
     totalReg,
     professionalInfo,
+    name,
+    email,
   } = req.body;
 
   try {
-    const registerId = generateRegisterId();
+    const supervisor = await Supervisor.findOne({ userId: req.user.userID });
 
-    const newSupervisor = new Supervisor({
-      userId,
-      registerId,
-      name,
-      fatherName,
-      motherName,
-      state,
-      city,
-      mobileNumber,
-      email,
-      registrationFee,
-      commission,
-      earningCommission,
-      oldWalletCr,
-      oldWalletDr,
-      walletCr,
-      walletDr,
-      balance,
-      totalInternReg,
-      totalYojanaReg,
-      totalReg,
-      professionalInfo,
-    });
+    if (!supervisor) {
+      return res.status(404).json({ message: "Supervisor profile not found." });
+    }
 
-    const savedSupervisor = await newSupervisor.save();
-    res.status(201).json({
-      message: "Supervisor created successfully",
-      data: savedSupervisor,
+    supervisor.fatherName = fatherName || supervisor.fatherName;
+    supervisor.motherName = motherName || supervisor.motherName;
+    supervisor.state = state || supervisor.state;
+    supervisor.city = city || supervisor.city;
+    supervisor.mobileNumber = mobileNumber || supervisor.mobileNumber;
+    supervisor.registrationFee = registrationFee || supervisor.registrationFee;
+    supervisor.commission = commission || supervisor.commission;
+    supervisor.earningCommission = earningCommission || supervisor.earningCommission;
+    supervisor.oldWalletCr = oldWalletCr || supervisor.oldWalletCr;
+    supervisor.oldWalletDr = oldWalletDr || supervisor.oldWalletDr;
+    supervisor.walletCr = walletCr || supervisor.walletCr;
+    supervisor.walletDr = walletDr || supervisor.walletDr;
+    supervisor.balance = balance || supervisor.balance;
+    supervisor.totalInternReg = totalInternReg || supervisor.totalInternReg;
+    supervisor.totalYojanaReg = totalYojanaReg || supervisor.totalYojanaReg;
+    supervisor.totalReg = totalReg || supervisor.totalReg;
+    supervisor.professionalInfo = professionalInfo || supervisor.professionalInfo;
+
+    await supervisor.save();
+
+    await UserFactory.updateUser(supervisor.userId, { name, email });
+
+    res.status(200).json({
+      message: "Supervisor profile updated successfully",
+      data: supervisor,
     });
   } catch (error) {
-    res.status(500).json({ message: "Failed to create supervisor", error });
+    console.error("Error updating supervisor profile:", error);
+    res.status(500).json({ message: "Failed to update supervisor profile", error });
   }
 };

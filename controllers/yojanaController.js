@@ -24,7 +24,7 @@ exports.registerYojana = async (req, res) => {
       identityType,
     } = req.body;
 
-    const userId = req.user.id;
+    const userId = req.user.userID;
 
     const photo = req.files?.photo?.[0]?.filename || null;
     const signature = req.files?.signature?.[0]?.filename || null;
@@ -83,9 +83,7 @@ exports.registerYojana = async (req, res) => {
     });
   } catch (error) {
     if (error.name === "ValidationError") {
-      return res
-        .status(400)
-        .json({ message: "Validation failed", error: error.errors });
+      return res.status(400).json({ message: "Validation failed", error: error.errors });
     }
     console.error("Registration failed:", error);
     res.status(500).json({ message: "Registration failed", error });

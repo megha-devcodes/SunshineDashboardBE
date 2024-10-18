@@ -1,4 +1,5 @@
-const YojanaRegistration = require("../models/YojanaRegistration");
+const Yojana = require("../models/Yojana");
+const User = require("../models/User");
 
 exports.getRegistrations = async (req, res) => {
   try {
@@ -13,9 +14,9 @@ exports.getRegistrations = async (req, res) => {
     const searchQuery = search
       ? {
           $or: [
-            { applicantName: { $regex: search, $options: "i" } },
-            { adhaarNo: { $regex: search, $options: "i" } },
-            { mobile: { $regex: search, $options: "i" } },
+            { fullName: { $regex: search, $options: "i" } },
+            { mobileNumber: { $regex: search, $options: "i" } },
+            { registerId: { $regex: search, $options: "i" } },
           ],
         }
       : {};
@@ -23,23 +24,38 @@ exports.getRegistrations = async (req, res) => {
     const pageNumber = parseInt(page, 10);
     const pageSize = parseInt(limit, 10);
 
-    const total = await YojanaRegistration.countDocuments(searchQuery);
+    const total = await Yojana.countDocuments(searchQuery);
 
     const sortOrder = order === "desc" ? -1 : 1;
     const sortCriteria = { [sortBy]: sortOrder };
 
-    const registrations = await YojanaRegistration.find(searchQuery)
-      .populate("supervisorId", "name mobileNumber")
+    const registrations = await Yojana.find(searchQuery)
       .sort(sortCriteria)
       .skip((pageNumber - 1) * pageSize)
       .limit(pageSize)
       .lean();
 
+    const userIds = registrations.map((registration) => registration.userId);
+    const users = await User.find({ userID: { $in: userIds } }).lean();
+
+    const userMap = users.reduce((acc, user) => {
+      acc[user.userID] = user;
+      return acc;
+    }, {});
+
+    const results = registrations.map((registration) => {
+      return {
+        ...registration,
+        name: userMap[registration.userId]?.name || null,
+        email: userMap[registration.userId]?.email || null,
+      };
+    });
+
     res.status(200).json({
       total,
       page: pageNumber,
       pages: Math.ceil(total / pageSize),
-      data: registrations,
+      data: results,
     });
   } catch (error) {
     console.error("Error fetching registrations:", error);
@@ -50,15 +66,22 @@ exports.getRegistrations = async (req, res) => {
 // Fetch a single registration by registerId
 exports.getRegistrationById = async (req, res) => {
   try {
-    const registration = await YojanaRegistration.findOne({
-      registerId: req.params.id,
-    }).populate("supervisorId", "name mobileNumber");
+    const registration = await Yojana.findOne({
+      registerId: req.params.registerId,
+    });
 
     if (!registration) {
       return res.status(404).json({ message: "Registration not found" });
     }
 
-    res.status(200).json(registration);
+    const user = await User.findOne({ userID: registration.userId });
+    const result = {
+      ...registration._doc,
+      name: user?.name || null,
+      email: user?.email || null,
+    };
+
+    res.status(200).json(result);
   } catch (error) {
     console.error("Error fetching registration:", error);
     res.status(500).json({ message: "Server error", error });
@@ -70,8 +93,8 @@ exports.updateRegistration = async (req, res) => {
   try {
     const { confirm, trnxId } = req.body;
 
-    const updatedRegistration = await YojanaRegistration.findOneAndUpdate(
-      { registerId: req.params.id },
+    const updatedRegistration = await Yojana.findOneAndUpdate(
+      { registerId: req.params.registerId },
       { confirm, trnxId },
       { new: true, runValidators: true }
     );
@@ -83,74 +106,6 @@ exports.updateRegistration = async (req, res) => {
     res.status(200).json(updatedRegistration);
   } catch (error) {
     console.error("Error updating registration:", error);
-    res.status(500).json({ message: "Server error", error });
-  }
-};
-
-// Add a new registration
-exports.addRegistration = async (req, res) => {
-  const {
-    registerId,
-    adhaarNo,
-    applicantName,
-    fatherName,
-    mobile,
-    fee,
-    entryDate,
-    state,
-    city,
-    gram,
-    post,
-    thana,
-    tehsil,
-    supervisorId,
-    yojanaName,
-  } = req.body;
-
-  try {
-    // Check if the registerId is unique
-    const existingRegistration = await YojanaRegistration.findOne({
-      registerId,
-    });
-
-    if (existingRegistration) {
-      return res.status(400).json({
-        message: "Register ID already exists. Please use a unique ID.",
-      });
-    }
-
-    // Create new registration object
-    const newRegistration = new YojanaRegistration({
-      registerId,
-      adhaarNo,
-      applicantName,
-      fatherName,
-      mobile,
-      fee,
-      entryDate,
-      state,
-      city,
-      gram,
-      post,
-      thana,
-      tehsil,
-      supervisorId,
-      yojanaName,
-    });
-
-    // Save the registration
-    const savedRegistration = await newRegistration.save();
-    res.status(201).json({
-      message: "Registration added successfully",
-      data: savedRegistration,
-    });
-  } catch (error) {
-    console.error("Error adding registration:", error);
-    if (error.name === "ValidationError") {
-      return res
-        .status(400)
-        .json({ message: "Validation error", error: error.errors });
-    }
     res.status(500).json({ message: "Server error", error });
   }
 };

@@ -3,8 +3,8 @@ const mongoose = require("mongoose");
 const YojanaSchema = new mongoose.Schema({
   registerId: { type: String, unique: true, required: true },
   userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Supervisor",
+    type: String,
+    ref: "User",
     required: true,
   },
   yojanaName: {
@@ -18,47 +18,20 @@ const YojanaSchema = new mongoose.Schema({
   guardianName: { type: String, required: true },
   motherName: { type: String, required: true },
   dob: { type: Date, required: true },
-  gender: {
-    type: String,
-    enum: ["Male", "Female", "Other"],
-    required: true,
-  },
-  category: {
-    type: String,
-    enum: ["OBC", "General", "ST", "SC"],
-    required: true,
-  },
-  mobileNumber: {
-    type: String,
-    required: true,
-    match: /^\d{10}$/,
-    validate: {
-      validator: function (v) {
-        return /^\d{10}$/.test(v);
-      },
-      message: (props) => `${props.value} is not a valid mobile number!`,
-    },
-  },
-  email: {
-    type: String,
-    match: /^\S+@\S+\.\S+$/,
-    required: false,
-  },
+  gender: { type: String, enum: ["Male", "Female", "Other"], required: true },
+  category: { type: String, enum: ["OBC", "General", "ST", "SC"], required: true },
+  mobileNumber: { type: String, required: true },
+  email: { type: String, required: false },
 
-  // Address Information
   address: {
-    state: { type: String },
-    city: { type: String },
+    state: { type: String, required: true },
+    city: { type: String, required: true },
     village: { type: String },
     post: { type: String },
     policeStation: { type: String },
     tehsil: { type: String },
-    district: { type: String },
-    pincode: {
-      type: String,
-      match: /^\d{6}$/,
-      required: false,
-    },
+    district: { type: String, required: true },
+    pincode: { type: String, required: false },
   },
   correspondenceAddress: {
     village: { type: String },
@@ -66,10 +39,7 @@ const YojanaSchema = new mongoose.Schema({
     policeStation: { type: String },
     tehsil: { type: String },
     district: { type: String },
-    pincode: {
-      type: String,
-      match: /^\d{6}$/,
-    },
+    pincode: { type: String },
   },
 
   guardianAnnualIncome: { type: String },
@@ -79,15 +49,16 @@ const YojanaSchema = new mongoose.Schema({
   workDuration: { type: String },
   preferredPanchayat: { type: String },
 
-  identityType: {
-    type: String,
-    enum: ["Aadhar", "Ration Card", "Income Tax", "Caste Certificate"],
-    required: true,
-  },
+  identityType: { type: String, required: true },
   documentNumber: { type: String, required: true },
   photo: { type: String },
   signature: { type: String },
   identityDocument: { type: String },
+
+  trnxId: { type: String, default: "" },
+  confirm: { type: Boolean, default: false },
+  fee: { type: Number, default: 0 },
+  entryDate: { type: Date, default: Date.now },
 
   createdAt: { type: Date, default: Date.now },
 });
