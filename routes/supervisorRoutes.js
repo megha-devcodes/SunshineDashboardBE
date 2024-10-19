@@ -10,7 +10,102 @@ const User = require("../models/User");
 
 const router = express.Router();
 
-// Get all supervisors (Admin only)
+/**
+ * @swagger
+ * tags:
+ *   name: Supervisors
+ *   description: API for managing supervisors
+ */
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Supervisor:
+ *       type: object
+ *       properties:
+ *         userId:
+ *           type: string
+ *           description: Unique user ID for the supervisor
+ *         fatherName:
+ *           type: string
+ *         motherName:
+ *           type: string
+ *         state:
+ *           type: string
+ *         city:
+ *           type: string
+ *         mobileNumber:
+ *           type: string
+ *         registrationFee:
+ *           type: number
+ *           default: 1000.0
+ *         commission:
+ *           type: number
+ *           default: 0.0
+ *         earningCommission:
+ *           type: number
+ *           default: 0.0
+ *         oldWalletCr:
+ *           type: number
+ *           default: 0.0
+ *         oldWalletDr:
+ *           type: number
+ *           default: 0.0
+ *         walletCr:
+ *           type: number
+ *           default: 0.0
+ *         walletDr:
+ *           type: number
+ *           default: 0.0
+ *         balance:
+ *           type: number
+ *           default: 0.0
+ *         totalInternReg:
+ *           type: number
+ *           default: 0
+ *         totalYojanaReg:
+ *           type: number
+ *           default: 0
+ *         totalReg:
+ *           type: number
+ *           default: 0
+ *         professionalInfo:
+ *           type: object
+ *           properties:
+ *             mondalName:
+ *               type: string
+ *             departmentName:
+ *               type: string
+ *             workingArea:
+ *               type: string
+ *             workingCity:
+ *               type: string
+ */
+
+/**
+ * @swagger
+ * /api/supervisors:
+ *   get:
+ *     summary: Get all supervisors (Admin only)
+ *     description: Fetches all supervisors. Only accessible by admins.
+ *     tags: [Supervisors]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of all supervisors
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Supervisor'
+ *       403:
+ *         description: Access denied
+ *       500:
+ *         description: Server error
+ */
 router.get("/", verifyToken, async (req, res) => {
   if (req.user.role !== "admin") {
     return res.status(403).json({ message: "Access denied. Admins only." });
@@ -23,25 +118,98 @@ router.get("/", verifyToken, async (req, res) => {
   }
 });
 
-// Get supervisor profile (Admin or self)
+/**
+ * @swagger
+ * /api/supervisors/profile:
+ *   get:
+ *     summary: Get supervisor profile (Admin or self)
+ *     description: Fetches profile details of the supervisor. Accessible by Admins or the supervisor themselves.
+ *     tags: [Supervisors]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Supervisor profile data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Supervisor'
+ *       403:
+ *         description: Access denied
+ *       404:
+ *         description: Supervisor profile not found
+ *       500:
+ *         description: Server error
+ */
 router.get("/profile", verifyToken, async (req, res) => {
   if (req.user.role !== "admin" && req.user.role !== "supervisor") {
     return res.status(403).json({ message: "Access denied." });
   }
-
   await getSupervisorProfile(req, res);
 });
 
-// Update supervisor profile (Admin or self)
+/**
+ * @swagger
+ * /api/supervisors/profile/update:
+ *   put:
+ *     summary: Update supervisor profile (Admin or self)
+ *     description: Update profile details of the supervisor. Accessible by Admins or the supervisor themselves.
+ *     tags: [Supervisors]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Supervisor'
+ *     responses:
+ *       200:
+ *         description: Supervisor profile updated successfully
+ *       403:
+ *         description: Access denied
+ *       404:
+ *         description: Supervisor profile not found
+ *       500:
+ *         description: Server error
+ */
 router.put("/profile/update", verifyToken, async (req, res) => {
   if (req.user.role !== "admin" && req.user.role !== "supervisor") {
     return res.status(403).json({ message: "Access denied." });
   }
-
   await updateSupervisor(req, res);
 });
 
-// Get a specific supervisor by their userID (Admin only)
+/**
+ * @swagger
+ * /api/supervisors/{userId}:
+ *   get:
+ *     summary: Get a specific supervisor by their userID (Admin only)
+ *     description: Fetches details of a specific supervisor using their userID. Accessible by Admins only.
+ *     tags: [Supervisors]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Unique user ID of the supervisor
+ *     responses:
+ *       200:
+ *         description: Supervisor data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Supervisor'
+ *       403:
+ *         description: Access denied
+ *       404:
+ *         description: Supervisor not found
+ *       500:
+ *         description: Server error
+ */
 router.get("/:userId", verifyToken, async (req, res) => {
   if (req.user.role !== "admin") {
     return res.status(403).json({ message: "Access denied. Admins only." });
@@ -64,7 +232,38 @@ router.get("/:userId", verifyToken, async (req, res) => {
   }
 });
 
-// Update a specific supervisor by their userID (Admin only)
+/**
+ * @swagger
+ * /api/supervisors/{userId}:
+ *   put:
+ *     summary: Update a specific supervisor by their userID (Admin only)
+ *     description: Updates details of a specific supervisor using their userID. Accessible by Admins only.
+ *     tags: [Supervisors]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Unique user ID of the supervisor
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Supervisor'
+ *     responses:
+ *       200:
+ *         description: Supervisor updated successfully
+ *       403:
+ *         description: Access denied
+ *       404:
+ *         description: Supervisor not found
+ *       500:
+ *         description: Failed to update supervisor
+ */
 router.put("/:userId", verifyToken, async (req, res) => {
   if (req.user.role !== "admin") {
     return res.status(403).json({ message: "Access denied. Admins only." });
@@ -109,7 +308,32 @@ router.put("/:userId", verifyToken, async (req, res) => {
   }
 });
 
-// Delete a supervisor by their userID (Admin only)
+/**
+ * @swagger
+ * /api/supervisors/{userId}:
+ *   delete:
+ *     summary: Delete a supervisor by their userID (Admin only)
+ *     description: Deletes a specific supervisor using their userID. Accessible by Admins only.
+ *     tags: [Supervisors]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Unique user ID of the supervisor
+ *     responses:
+ *       200:
+ *         description: Supervisor deleted successfully
+ *       403:
+ *         description: Access denied
+ *       404:
+ *         description: Supervisor not found
+ *       500:
+ *         description: Server error occurred while trying to delete the supervisor
+ */
 router.delete("/:userId", verifyToken, async (req, res) => {
   if (req.user.role !== "admin") {
     return res.status(403).json({ message: "Access denied. Admins only." });
@@ -122,7 +346,6 @@ router.delete("/:userId", verifyToken, async (req, res) => {
     }
 
     await User.deleteOne({ userID: req.params.userId });
-
     await Supervisor.deleteOne({ userId: req.params.userId });
 
     res.json({ message: "Supervisor deleted successfully" });
