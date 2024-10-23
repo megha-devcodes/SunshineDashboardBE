@@ -42,12 +42,12 @@ exports.updateSupervisor = async (req, res) => {
     walletCr,
     walletDr,
     balance,
+    oldBalance,
     totalInternReg,
     totalYojanaReg,
     totalReg,
     professionalInfo,
-    name,
-    email,
+    photo,
   } = req.body;
 
   try {
@@ -64,20 +64,22 @@ exports.updateSupervisor = async (req, res) => {
     supervisor.mobileNumber = mobileNumber || supervisor.mobileNumber;
     supervisor.registrationFee = registrationFee || supervisor.registrationFee;
     supervisor.commission = commission || supervisor.commission;
-    supervisor.earningCommission = earningCommission || supervisor.earningCommission;
+    supervisor.earningCommission =
+      earningCommission || supervisor.earningCommission;
     supervisor.oldWalletCr = oldWalletCr || supervisor.oldWalletCr;
     supervisor.oldWalletDr = oldWalletDr || supervisor.oldWalletDr;
     supervisor.walletCr = walletCr || supervisor.walletCr;
     supervisor.walletDr = walletDr || supervisor.walletDr;
     supervisor.balance = balance || supervisor.balance;
+    supervisor.oldBalance = oldBalance || supervisor.oldBalance;
     supervisor.totalInternReg = totalInternReg || supervisor.totalInternReg;
     supervisor.totalYojanaReg = totalYojanaReg || supervisor.totalYojanaReg;
     supervisor.totalReg = totalReg || supervisor.totalReg;
-    supervisor.professionalInfo = professionalInfo || supervisor.professionalInfo;
+    supervisor.professionalInfo =
+      professionalInfo || supervisor.professionalInfo;
+    supervisor.photo = photo || supervisor.photo;
 
     await supervisor.save();
-
-    await UserFactory.updateUser(supervisor.userId, { name, email });
 
     res.status(200).json({
       message: "Supervisor profile updated successfully",
@@ -85,6 +87,8 @@ exports.updateSupervisor = async (req, res) => {
     });
   } catch (error) {
     console.error("Error updating supervisor profile:", error);
-    res.status(500).json({ message: "Failed to update supervisor profile", error });
+    res
+      .status(500)
+      .json({ message: "Failed to update supervisor profile", error });
   }
 };

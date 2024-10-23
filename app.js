@@ -26,6 +26,7 @@ app.use("/api/yojana-pdf", require("./routes/yojanaPDFRoutes"));
 app.use("/api/wallet-transactions", require("./routes/walletRoutes"));
 app.use("/api/commissions", require("./routes/commissionRoutes"));
 app.use("/api/location", require("./routes/locationRoutes"));
+app.use("/api/application", require("./routes/applicationRoutes"));
 
 // Swagger
 const PORT = process.env.PORT || 5000;

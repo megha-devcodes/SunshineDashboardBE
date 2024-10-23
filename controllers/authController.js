@@ -5,33 +5,47 @@ const User = require("../models/User");
 const Token = require("../models/Token");
 require("dotenv").config();
 
-// Register a new user
+// Register a new admin (Admins only)
 exports.register = async (req, res) => {
   const { name, email, password, role } = req.body;
 
   try {
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ message: "Access denied. Admins only." });
+    }
+
+    if (role && role !== "admin") {
+      return res.status(403).json({
+        message:
+          "Cannot register supervisors directly. Use the application workflow.",
+      });
+    }
+
     let user = await User.findOne({ email });
     if (user) {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    user = await UserFactory.createUser({ name, email, password, role });
+    user = await UserFactory.createUser({
+      name,
+      email,
+      password,
+      role: "admin",
+    });
 
     const token = jwt.sign(
       { userID: user.userID, role: user.role },
       process.env.JWT_SECRET,
       {
         expiresIn: "1h",
-      }
+      },
     );
 
-    res
-      .status(201)
-      .json({
-        message: "User registered successfully",
-        token,
-        userID: user.userID,
-      });
+    res.status(201).json({
+      message: "Admin registered successfully",
+      token,
+      userID: user.userID,
+    });
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
   }
@@ -57,7 +71,7 @@ exports.login = async (req, res) => {
       process.env.JWT_SECRET,
       {
         expiresIn: "1h",
-      }
+      },
     );
 
     res.status(200).json({ message: "Logged in successfully", token });
@@ -86,5 +100,51 @@ exports.logout = async (req, res) => {
   } catch (error) {
     console.error("Logout failed:", error.message);
     res.status(400).json({ message: "Invalid or expired token." });
+  }
+};
+
+exports.updateUser = async (req, res) => {
+  const { userID } = req.params;
+  const updatedData = req.body;
+
+  try {
+    const requesterRole = req.user.role;
+    const currentUser = await User.findOne({ userID });
+
+    if (!currentUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (
+      requesterRole === "supervisor" &&
+      (updatedData.role || updatedData.email)
+    ) {
+      return res
+        .status(403)
+        .json({ message: "Supervisors cannot update role or email." });
+    }
+
+    if (
+      requesterRole === "admin" &&
+      currentUser.role === "admin" &&
+      req.user.userID !== userID
+    ) {
+      return res
+        .status(403)
+        .json({ message: "Admins cannot update other admins." });
+    }
+
+    const updatedUser = await UserFactory.updateUser(
+      userID,
+      updatedData,
+      requesterRole,
+    );
+
+    res.status(200).json({
+      message: "User updated successfully",
+      data: updatedUser,
+    });
+  } catch (error) {
+    res.status(403).json({ message: error.message });
   }
 };
