@@ -2,11 +2,8 @@ const mongoose = require("mongoose");
 
 const SupervisorSchema = new mongoose.Schema(
   {
-    userId: {
-      type: String,
-      ref: "User",
-      required: true,
-    },
+    userId: { type: String, ref: "User", required: true },
+    fullName: { type: String}, 
     fatherName: { type: String },
     motherName: { type: String },
     state: { type: String },
@@ -31,8 +28,9 @@ const SupervisorSchema = new mongoose.Schema(
       workingArea: { type: String },
       workingCity: { type: String },
     },
+    joiningDate: { type: Date, default: Date.now },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 module.exports = mongoose.model("Supervisor", SupervisorSchema);

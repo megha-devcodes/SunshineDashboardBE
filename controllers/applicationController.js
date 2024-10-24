@@ -146,6 +146,7 @@ exports.approveApplication = async (req, res) => {
 
     const newSupervisor = new Supervisor({
       userId: application.userId,
+      fullName: application.fullName,
       fatherName: application.fatherName,
       motherName: application.motherName,
       state: application.permanentAddress.state,
@@ -153,6 +154,7 @@ exports.approveApplication = async (req, res) => {
       mobileNumber: application.mobileNumber,
       registrationFee: application.registrationFee,
       photo: application.photo,
+      joiningDate: new Date(),
     });
 
     await newSupervisor.save();
@@ -191,8 +193,9 @@ exports.rejectApplication = async (req, res) => {
 exports.deleteApplication = async (req, res) => {
   const { applicationId } = req.params;
   try {
-    const application =
-      await SupervisorApplication.findByIdAndDelete(applicationId);
+    const application = await SupervisorApplication.findByIdAndDelete(
+      applicationId
+    );
 
     if (!application) {
       return res.status(404).json({ message: "Application not found." });

@@ -27,6 +27,8 @@ app.use("/api/wallet-transactions", require("./routes/walletRoutes"));
 app.use("/api/commissions", require("./routes/commissionRoutes"));
 app.use("/api/location", require("./routes/locationRoutes"));
 app.use("/api/application", require("./routes/applicationRoutes"));
+app.use("/api/id-card", require("./routes/idCardRoutes"));
+
 
 // Swagger
 const PORT = process.env.PORT || 5000;
