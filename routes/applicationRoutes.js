@@ -138,18 +138,18 @@ router.get("/generate-credentials", generateCredentials);
  *         description: Failed to submit application
  */
 router.post(
-    "/submit",
-    upload.fields([
-      { name: "photo", maxCount: 1 },
-      { name: "signature", maxCount: 1 },
-      { name: "attachedDocument", maxCount: 1 },
-    ]),
-    (req, res, next) => {
-      req.body.applicationType = "supervisor";
-      next();
-    },
-    createSupervisorApplication
-  );
+  "/submit",
+  (req, res, next) => {
+    req.body.applicationType = "supervisor";
+    next();
+  },
+  upload.fields([
+    { name: "photo", maxCount: 1 },
+    { name: "signature", maxCount: 1 },
+    { name: "attachedDocument", maxCount: 1 },
+  ]),
+  createSupervisorApplication
+);
 
 /**
  * @swagger
@@ -226,7 +226,7 @@ router.patch(
   "/approve/:applicationId",
   verifyToken,
   isAdmin,
-  approveApplication,
+  approveApplication
 );
 
 /**
@@ -281,7 +281,7 @@ router.delete(
   "/delete/:applicationId",
   verifyToken,
   isAdmin,
-  deleteApplication,
+  deleteApplication
 );
 
 module.exports = router;

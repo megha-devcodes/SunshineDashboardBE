@@ -37,9 +37,9 @@ const router = express.Router();
  *                 message:
  *                   type: string
  *                   example: "PDF generated successfully"
- *                 pdfPath:
+ *                 downloadLink:
  *                   type: string
- *                   example: "/public/pdfs/REG-123456789.pdf"
+ *                   example: "http://localhost:3000/public/pdfs/REG-123456789.pdf"
  *       404:
  *         description: Registration not found
  *       401:

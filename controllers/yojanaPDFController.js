@@ -289,20 +289,31 @@ exports.generatePDF = async (req, res) => {
       </html>
     `;
 
+    const pdfDirectory = path.join(__dirname, "../public/pdfs");
+    if (!fs.existsSync(pdfDirectory)) {
+      fs.mkdirSync(pdfDirectory, { recursive: true });
+      console.log(`Directory created: ${pdfDirectory}`);
+    }
+
     const browser = await puppeteer.launch({
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
     const page = await browser.newPage();
     await page.setContent(htmlContent);
-    const pdfPath = path.join(
-      __dirname,
-      "../public/pdfs",
-      `${registration.registerId}.pdf`
-    );
+    const pdfPath = path.join(pdfDirectory, `${registration.registerId}.pdf`);
     await page.pdf({ path: pdfPath, format: "A4", printBackground: true });
     await browser.close();
 
-    res.status(200).json({ message: "PDF generated successfully", pdfPath });
+    console.log(`PDF generated at: ${pdfPath}`);
+
+    res.download(pdfPath, `${registration.registerId}.pdf`, (err) => {
+      if (err) {
+        console.error("Failed to download PDF:", err);
+        res
+          .status(500)
+          .send({ message: "Failed to download PDF.", error: err });
+      }
+    });
   } catch (error) {
     console.error("Error generating PDF:", error);
     res.status(500).json({ message: "Server error", error });

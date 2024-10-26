@@ -193,9 +193,8 @@ exports.rejectApplication = async (req, res) => {
 exports.deleteApplication = async (req, res) => {
   const { applicationId } = req.params;
   try {
-    const application = await SupervisorApplication.findByIdAndDelete(
-      applicationId
-    );
+    const application =
+      await SupervisorApplication.findByIdAndDelete(applicationId);
 
     if (!application) {
       return res.status(404).json({ message: "Application not found." });

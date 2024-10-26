@@ -15,7 +15,7 @@ app.use(cors());
 
 app.set("trust proxy", true);
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-app.use("/public", express.static(path.join(__dirname, "public/pdfs")));
+app.use("/public", express.static(path.join(__dirname, "public")));
 
 // Routes
 app.use("/api/auth", require("./routes/authRoutes"));

@@ -8,36 +8,13 @@ const ensureDirectoryExists = (directory) => {
   }
 };
 
+const baseFolder = "./uploads";
+
+ensureDirectoryExists(baseFolder);
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    let folder = "./uploads/others";
-    const appType = req.body.applicationType;
-
-    switch (file.fieldname) {
-      case "photo":
-        folder =
-          appType === "supervisor"
-            ? "./uploads/supervisor/photos"
-            : "./uploads/yojana/photos";
-        break;
-      case "signature":
-        folder =
-          appType === "supervisor"
-            ? "./uploads/supervisor/signatures"
-            : "./uploads/yojana/signatures";
-        break;
-      case "identityDocument":
-        folder = "./uploads/yojana/identityDocuments";
-        break;
-      case "attachedDocument":
-        folder = "./uploads/supervisor/attachedDocuments";
-        break;
-      default:
-        folder = "./uploads/others";
-    }
-
-    ensureDirectoryExists(folder);
-    cb(null, folder);
+    cb(null, baseFolder);
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = `${Date.now()}-${file.originalname}`;

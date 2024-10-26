@@ -61,6 +61,10 @@ class UserFactory {
         throw new Error("User not found");
       }
 
+      if (updatedData.password) {
+        updatedData.password = await bcrypt.hash(updatedData.password, 12);
+      }
+
       Object.assign(user, updatedData);
       await user.save();
       return user;

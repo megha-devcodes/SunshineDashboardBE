@@ -8,8 +8,12 @@ const Supervisor = require("../models/Supervisor");
 const ensureDirectoryExists = (dirPath) => {
   if (!fs.existsSync(dirPath)) {
     fs.mkdirSync(dirPath, { recursive: true });
-    console.log(`Directory created: ${dirPath}`);
   }
+};
+
+const convertImageToBase64 = (imagePath) => {
+  const imageData = fs.readFileSync(imagePath);
+  return `data:image/png;base64,${imageData.toString("base64")}`;
 };
 
 exports.generateIdCard = async (req, res) => {
@@ -47,6 +51,13 @@ exports.generateIdCard = async (req, res) => {
 
     const outputDir = path.join(__dirname, "../output");
     ensureDirectoryExists(outputDir);
+
+    const photoPath = path.join(
+      __dirname,
+      "../uploads",
+      supervisorData.photo
+    );
+    const photoBase64 = convertImageToBase64(photoPath);
 
     const htmlContent = `
         <html>
@@ -125,29 +136,17 @@ exports.generateIdCard = async (req, res) => {
                 <div class="id-card">
                     <div class="left-section">
                         <div class="details">
-                            <p>Register ID: <strong>${
-                              supervisorData.userId
-                            }</strong></p>
-                            <p>Father's Name: <strong>${
-                              supervisorData.fatherName
-                            }</strong></p>
-                            <p>Mobile: <strong>${
-                              supervisorData.mobileNumber
-                            }</strong></p>
+                            <p>Register ID: <strong>${supervisorData.userId}</strong></p>
+                            <p>Father's Name: <strong>${supervisorData.fatherName}</strong></p>
+                            <p>Mobile: <strong>${supervisorData.mobileNumber}</strong></p>
                             <p>Joining Date: <strong>${supervisorData.joiningDate.toLocaleDateString()}</strong></p>                
                         </div>
                         <img class="barcode" src="${barcodeBase64}" alt="Barcode">
                     </div>
                     <div class="right-section">
-                        <img class="photo" src="file://${path.join(
-                          __dirname,
-                          "../uploads/supervisor/photos",
-                          supervisorData.photo
-                        )}" alt="Supervisor Photo">
+                        <img class="photo" src="${photoBase64}" alt="Supervisor Photo">
                         <h2>${supervisorData.fullName}</h2>
-                        <p>Address: ${supervisorData.state}, ${
-      supervisorData.city
-    }</p>
+                        <p>Address: ${supervisorData.state}, ${supervisorData.city}</p>
                         <img class="qr-code" src="${qrCodeDataUrl}" alt="QR Code">
                     </div>
                 </div>
