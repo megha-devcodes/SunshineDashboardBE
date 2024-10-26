@@ -75,9 +75,11 @@ router.get("/generate-credentials", generateCredentials);
  *                 description: Email address
  *               yojnaName:
  *                 type: string
+ *                 enum: ["MAHILA SVAASTHY SURAKSHA YOJANA", "FREE SEWING MACHINE DISTRIBUTION PARIYOJNA"]
  *                 description: Name of the Yojana
  *               jobType:
  *                 type: string
+ *                 enum: ["BLOCK INCHARGE"]
  *                 description: Job type applied for
  *               registrationFee:
  *                 type: number
@@ -131,6 +133,15 @@ router.get("/generate-credentials", generateCredentials);
  *               signature:
  *                 type: string
  *                 format: binary
+ *               experienceYears:
+ *                 type: number
+ *                 description: Years of experience
+ *               educationalQualification:
+ *                 type: string
+ *                 description: Educational Qualification (e.g., Graduate, Post Graduate)
+ *               preferredPanchayat:
+ *                 type: string
+ *                 description: Preferred Panchayat
  *     responses:
  *       201:
  *         description: Application submitted successfully

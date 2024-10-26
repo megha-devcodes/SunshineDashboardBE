@@ -66,7 +66,8 @@ exports.login = async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    if (role && user.role !== role) {
+    const userRole = role ? role : user.role;
+    if (user.role !== userRole) {
       return res.status(403).json({
         message: "Access denied due to role mismatch.",
       });

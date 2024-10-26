@@ -51,9 +51,13 @@ const router = express.Router();
  *         password:
  *           type: string
  *           description: The user's password
+ *         role:
+ *           type: string
+ *           description: The user's role (e.g., admin, supervisor). Optional.
  *       example:
  *         email: admin@example.com
  *         password: password123
+ *         role: admin
  *     UpdateUser:
  *       type: object
  *       properties:
@@ -124,7 +128,7 @@ router.post("/register", verifyToken, isAdmin, register);
  * /api/auth/login:
  *   post:
  *     summary: User login
- *     description: Authenticates a user and provides a JWT token. Expects email, password, and role.
+ *     description: Authenticates a user and provides a JWT token. Expects email, password, and an optional role.
  *     tags: [Authentication]
  *     requestBody:
  *       required: true
