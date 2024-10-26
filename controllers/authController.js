@@ -38,7 +38,7 @@ exports.register = async (req, res) => {
       process.env.JWT_SECRET,
       {
         expiresIn: "1h",
-      },
+      }
     );
 
     res.status(201).json({
@@ -53,7 +53,7 @@ exports.register = async (req, res) => {
 
 // Login user
 exports.login = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, role } = req.body;
 
   try {
     const user = await User.findOne({ email });
@@ -66,15 +66,26 @@ exports.login = async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
+    if (role && user.role !== role) {
+      return res.status(403).json({
+        message: "Access denied due to role mismatch.",
+      });
+    }
+
     const token = jwt.sign(
       { userID: user.userID, role: user.role },
       process.env.JWT_SECRET,
       {
         expiresIn: "1h",
-      },
+      }
     );
 
-    res.status(200).json({ message: "Logged in successfully", token });
+    res.status(200).json({
+      message: "Logged in successfully",
+      token,
+      userID: user.userID,
+      role: user.role,
+    });
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
   }
@@ -103,6 +114,7 @@ exports.logout = async (req, res) => {
   }
 };
 
+// Update user information
 exports.updateUser = async (req, res) => {
   const { userID } = req.params;
   const updatedData = req.body;
@@ -137,7 +149,7 @@ exports.updateUser = async (req, res) => {
     const updatedUser = await UserFactory.updateUser(
       userID,
       updatedData,
-      requesterRole,
+      requesterRole
     );
 
     res.status(200).json({

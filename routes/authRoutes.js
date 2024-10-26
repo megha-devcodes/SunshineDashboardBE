@@ -124,7 +124,7 @@ router.post("/register", verifyToken, isAdmin, register);
  * /api/auth/login:
  *   post:
  *     summary: User login
- *     description: Authenticates a user and provides a JWT token.
+ *     description: Authenticates a user and provides a JWT token. Expects email, password, and role.
  *     tags: [Authentication]
  *     requestBody:
  *       required: true
@@ -139,6 +139,9 @@ router.post("/register", verifyToken, isAdmin, register);
  *               password:
  *                 type: string
  *                 description: The user's password
+ *               role:
+ *                 type: string
+ *                 description: The user's role (e.g., admin, supervisor)
  *     responses:
  *       200:
  *         description: Logged in successfully
@@ -152,8 +155,14 @@ router.post("/register", verifyToken, isAdmin, register);
  *                 token:
  *                   type: string
  *                   description: JWT token for authentication
+ *                 userID:
+ *                   type: string
+ *                 role:
+ *                   type: string
  *       400:
  *         description: Invalid credentials
+ *       403:
+ *         description: Access denied due to role mismatch
  *       500:
  *         description: Server error
  */
