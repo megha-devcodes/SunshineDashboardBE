@@ -19,7 +19,11 @@ const YojanaSchema = new mongoose.Schema({
   motherName: { type: String, required: true },
   dob: { type: Date, required: true },
   gender: { type: String, enum: ["Male", "Female", "Other"], required: true },
-  category: { type: String, enum: ["OBC", "General", "ST", "SC"], required: true },
+  category: {
+    type: String,
+    enum: ["OBC", "General", "ST", "SC"],
+    required: true,
+  },
   mobileNumber: { type: String, required: true },
   email: { type: String, required: false },
 

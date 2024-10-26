@@ -83,7 +83,9 @@ exports.registerYojana = async (req, res) => {
     });
   } catch (error) {
     if (error.name === "ValidationError") {
-      return res.status(400).json({ message: "Validation failed", error: error.errors });
+      return res
+        .status(400)
+        .json({ message: "Validation failed", error: error.errors });
     }
     console.error("Registration failed:", error);
     res.status(500).json({ message: "Registration failed", error });
