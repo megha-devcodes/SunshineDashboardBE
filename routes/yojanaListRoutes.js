@@ -1,169 +1,274 @@
 const express = require("express");
 const {
-  getRegistrations,
-  getRegistrationById,
-  updateRegistration,
-} = require("../controllers/yojanaListController");
-const { verifyToken } = require("../middleware/authMiddleware");
+  getSupervisorProfile,
+  getAllSupervisors,
+  getSupervisorById,
+  updateSupervisorCredits,
+  updateSupervisor,
+  updateSupervisorById,
+  deleteSupervisorById,
+} = require("../controllers/supervisorController");
+const {
+  generateApplicationPDF,
+} = require("../controllers/applicationPDFController");
+const { verifyToken, isAdmin } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
 /**
  * @swagger
  * tags:
- *   name: Yojana Registration List
- *   description: API for managing Yojana registrations list
+ *   name: Supervisors
+ *   description: API for managing supervisors
  */
 
 /**
  * @swagger
  * components:
  *   schemas:
- *     YojanaRegistration:
+ *     Supervisor:
  *       type: object
  *       properties:
- *         registerId:
- *           type: string
- *           description: Unique identifier for the registration
- *         userId:
- *           type: string
- *           description: User ID who registered for the Yojana
- *         yojanaName:
- *           type: string
- *           description: Name of the Yojana program
  *         fullName:
  *           type: string
- *           description: Full name of the applicant
+ *         fatherName:
+ *           type: string
+ *         motherName:
+ *           type: string
+ *         state:
+ *           type: string
+ *         city:
+ *           type: string
  *         mobileNumber:
  *           type: string
- *           description: Mobile number of the applicant
- *         email:
+ *         photo:
  *           type: string
- *           description: Email of the applicant
- *         confirm:
- *           type: boolean
- *           description: Confirmation status of the registration
- *         trnxId:
- *           type: string
- *           description: Transaction ID associated with the registration
- *         entryDate:
- *           type: string
- *           format: date-time
- *           description: Date of registration
+ *           format: binary
+ *         registrationFee:
+ *           type: number
+ *           default: 1000.0
+ *         commission:
+ *           type: number
+ *           default: 0.0
+ *         earningCommission:
+ *           type: number
+ *           default: 0.0
+ *         oldWalletCr:
+ *           type: number
+ *           default: 0.0
+ *         oldWalletDr:
+ *           type: number
+ *           default: 0.0
+ *         walletCr:
+ *           type: number
+ *           default: 0.0
+ *         walletDr:
+ *           type: number
+ *           default: 0.0
+ *         balance:
+ *           type: number
+ *           default: 0.0
+ *         totalInternReg:
+ *           type: number
+ *           default: 0
+ *         totalYojanaReg:
+ *           type: number
+ *           default: 0
+ *         totalReg:
+ *           type: number
+ *           default: 0
+ *         professionalInfo:
+ *           type: object
+ *           properties:
+ *             mondalName:
+ *               type: string
+ *             departmentName:
+ *               type: string
+ *             workingArea:
+ *               type: string
+ *             workingCity:
+ *               type: string
  */
 
 /**
  * @swagger
- * /api/yojana-list:
+ * /api/supervisors:
  *   get:
- *     summary: Retrieve a list of Yojana registrations
- *     description: Retrieve a paginated list of Yojana registrations with optional search, sorting, and pagination.
- *     tags: [Yojana Registration List]
+ *     summary: Get all supervisors (Admin only)
+ *     description: Fetches all supervisors. Only accessible by admins.
+ *     tags: [Supervisors]
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *       - in: query
- *         name: page
- *         schema:
- *           type: integer
- *           default: 1
- *         description: The page number to retrieve
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *           default: 10
- *         description: The number of registrations per page
- *       - in: query
- *         name: search
- *         schema:
- *           type: string
- *         description: Search term to filter registrations by name, mobile number, or registration ID
- *       - in: query
- *         name: sortBy
- *         schema:
- *           type: string
- *           default: entryDate
- *         description: Field to sort by
- *       - in: query
- *         name: order
- *         schema:
- *           type: string
- *           enum: [asc, desc]
- *           default: desc
- *         description: Sort order (ascending or descending)
  *     responses:
  *       200:
- *         description: List of Yojana registrations
+ *         description: List of all supervisors
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 total:
- *                   type: integer
- *                   description: Total number of registrations
- *                 page:
- *                   type: integer
- *                   description: Current page number
- *                 pages:
- *                   type: integer
- *                   description: Total number of pages
- *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/YojanaRegistration'
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Supervisor'
+ *       403:
+ *         description: Access denied
  *       500:
  *         description: Server error
  */
-router.get("/", verifyToken, getRegistrations);
+router.get("/", verifyToken, isAdmin, getAllSupervisors);
 
 /**
  * @swagger
- * /api/yojana-list/{registerId}:
+ * /api/supervisors/profile:
  *   get:
- *     summary: Retrieve a Yojana registration by ID
- *     description: Fetch a specific Yojana registration by its unique registration ID.
- *     tags: [Yojana Registration List]
+ *     summary: Get supervisor profile (Admin or self)
+ *     description: Fetches profile details of the supervisor. Accessible by Admins or the supervisor themselves.
+ *     tags: [Supervisors]
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: registerId
- *         required: true
- *         schema:
- *           type: string
- *         description: The unique registration ID of the Yojana registration
  *     responses:
  *       200:
- *         description: Details of the Yojana registration
+ *         description: Supervisor profile data
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/YojanaRegistration'
+ *               $ref: '#/components/schemas/Supervisor'
+ *       403:
+ *         description: Access denied
  *       404:
- *         description: Registration not found
+ *         description: Supervisor profile not found
  *       500:
  *         description: Server error
  */
-router.get("/:registerId", verifyToken, getRegistrationById);
+router.get("/profile", verifyToken, getSupervisorProfile);
 
 /**
  * @swagger
- * /api/yojana-list/{registerId}:
+ * /api/supervisors/profile/update:
  *   put:
- *     summary: Update a Yojana registration
- *     description: Update the confirmation status and transaction ID of a specific Yojana registration.
- *     tags: [Yojana Registration List]
+ *     summary: Update supervisor profile (Admin or self)
+ *     description: Update profile details of the supervisor. Accessible by Admins or the supervisor themselves. Supervisors can only update specific fields (mobileNumber, photo, professionalInfo).
+ *     tags: [Supervisors]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Supervisor'
+ *     responses:
+ *       200:
+ *         description: Supervisor profile updated successfully
+ *       403:
+ *         description: Access denied
+ *       404:
+ *         description: Supervisor profile not found
+ *       500:
+ *         description: Server error
+ */
+router.put("/profile/update", verifyToken, updateSupervisor);
+
+/**
+ * @swagger
+ * /api/supervisors/{userId}:
+ *   get:
+ *     summary: Get a specific supervisor by their userID (Admin only)
+ *     description: Fetches details of a specific supervisor using their userID. Accessible by Admins only.
+ *     tags: [Supervisors]
  *     security:
  *       - bearerAuth: []
  *     parameters:
  *       - in: path
- *         name: registerId
+ *         name: userId
  *         required: true
  *         schema:
  *           type: string
- *         description: The unique registration ID of the Yojana registration to update
+ *         description: Unique user ID of the supervisor
+ *     responses:
+ *       200:
+ *         description: Supervisor data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Supervisor'
+ *       403:
+ *         description: Access denied
+ *       404:
+ *         description: Supervisor not found
+ *       500:
+ *         description: Server error
+ */
+router.get("/:userId", verifyToken, isAdmin, getSupervisorById);
+/**
+ * @swagger
+ * /api/supervisors/{userId}:
+ *   put:
+ *     summary: Update a specific supervisor by their userID (Admin only)
+ *     description: Updates details of a specific supervisor using their userID. Accessible by Admins only.
+ *     tags: [Supervisors]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Unique user ID of the supervisor
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Supervisor'
+ *     responses:
+ *       200:
+ *         description: Supervisor updated successfully
+ *       403:
+ *         description: Access denied
+ *       404:
+ *         description: Supervisor not found
+ *       500:
+ *         description: Failed to update supervisor
+ */
+router.put("/:userId", verifyToken, isAdmin, updateSupervisorById);
+
+/**
+ * @swagger
+ * /api/supervisors/{userId}:
+ *   delete:
+ *     summary: Delete a supervisor by their userID (Admin only)
+ *     description: Deletes a specific supervisor using their userID. Accessible by Admins only.
+ *     tags: [Supervisors]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Unique user ID of the supervisor
+ *     responses:
+ *       200:
+ *         description: Supervisor deleted successfully
+ *       403:
+ *         description: Access denied
+ *       404:
+ *         description: Supervisor not found
+ *       500:
+ *         description: Server error occurred while trying to delete the supervisor
+ */
+router.delete("/:userId", verifyToken, isAdmin, deleteSupervisorById);
+
+/**
+ * @swagger
+ * /api/supervisors/credits/update:
+ *   put:
+ *     summary: Admin updates supervisor credits and commission
+ *     description: Allows admins to update supervisor's commission, credits, and debits.
+ *     tags: [Supervisors]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -171,27 +276,55 @@ router.get("/:registerId", verifyToken, getRegistrationById);
  *           schema:
  *             type: object
  *             properties:
- *               confirm:
- *                 type: boolean
- *                 description: Confirmation status of the registration
- *               trnxId:
+ *               userId:
  *                 type: string
- *                 description: Transaction ID for the registration
- *             example:
- *               confirm: true
- *               trnxId: "TXN-1234567890"
+ *               credit:
+ *                 type: number
+ *               debit:
+ *                 type: number
+ *               commission:
+ *                 type: number
  *     responses:
  *       200:
- *         description: Yojana registration updated successfully
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/YojanaRegistration'
+ *         description: Supervisor credits updated successfully
  *       404:
- *         description: Registration not found
+ *         description: Supervisor not found
+ *       500:
+ *         description: Failed to update supervisor credits
+ */
+
+router.put("/credits/update", verifyToken, isAdmin, updateSupervisorCredits);
+
+/**
+ * @swagger
+ * /api/supervisors/application-pdf/{id}:
+ *   get:
+ *     summary: Generate and download PDF for a supervisor application
+ *     tags: [Supervisors]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User ID of the supervisor application
+ *     responses:
+ *       200:
+ *         description: PDF generated and downloaded successfully
+ *         content:
+ *           application/pdf:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Application not found
  *       500:
  *         description: Server error
  */
-router.put("/:registerId", verifyToken, updateRegistration);
+router.get("/application-pdf/:id", verifyToken, generateApplicationPDF);
 
 module.exports = router;

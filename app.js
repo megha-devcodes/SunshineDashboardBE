@@ -23,12 +23,13 @@ app.use("/api/supervisors", require("./routes/supervisorRoutes"));
 app.use("/api/yojana", require("./routes/yojanaRoutes"));
 app.use("/api/yojana-list", require("./routes/yojanaListRoutes"));
 app.use("/api/yojana-pdf", require("./routes/yojanaPDFRoutes"));
-app.use("/api/wallet-transactions", require("./routes/walletRoutes"));
-app.use("/api/commissions", require("./routes/commissionRoutes"));
 app.use("/api/location", require("./routes/locationRoutes"));
 app.use("/api/application", require("./routes/applicationRoutes"));
 app.use("/api/id-card", require("./routes/idCardRoutes"));
-
+app.use("/api/certificate", require("./routes/certificationRoutes"));
+app.use("/api/yojna-program", require("./routes/yojanaProgramRoutes"));
+app.use("/api/identity", require("./routes/identityRoutes"));
+app.use("/api/category", require("./routes/categoryRoutes"));
 
 // Swagger
 const PORT = process.env.PORT || 5000;

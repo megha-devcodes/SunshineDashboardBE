@@ -38,7 +38,7 @@ exports.register = async (req, res) => {
       process.env.JWT_SECRET,
       {
         expiresIn: "1h",
-      }
+      },
     );
 
     res.status(201).json({
@@ -78,7 +78,7 @@ exports.login = async (req, res) => {
       process.env.JWT_SECRET,
       {
         expiresIn: "1h",
-      }
+      },
     );
 
     res.status(200).json({
@@ -150,7 +150,7 @@ exports.updateUser = async (req, res) => {
     const updatedUser = await UserFactory.updateUser(
       userID,
       updatedData,
-      requesterRole
+      requesterRole,
     );
 
     res.status(200).json({

@@ -46,17 +46,13 @@ exports.generateIdCard = async (req, res) => {
       backgroundcolor: "FFFFFF",
     });
     const barcodeBase64 = `data:image/png;base64,${barcodeBuffer.toString(
-      "base64"
+      "base64",
     )}`;
 
     const outputDir = path.join(__dirname, "../output");
     ensureDirectoryExists(outputDir);
 
-    const photoPath = path.join(
-      __dirname,
-      "../uploads",
-      supervisorData.photo
-    );
+    const photoPath = path.join(__dirname, "../uploads", supervisorData.photo);
     const photoBase64 = convertImageToBase64(photoPath);
 
     const htmlContent = `
@@ -161,7 +157,7 @@ exports.generateIdCard = async (req, res) => {
 
     const pdfPath = path.join(
       outputDir,
-      `${supervisorData.userId}_id_card.pdf`
+      `${supervisorData.userId}_id_card.pdf`,
     );
     await page.pdf({
       path: pdfPath,

@@ -147,10 +147,11 @@ exports.approveApplication = async (req, res) => {
     const newSupervisor = new Supervisor({
       userId: application.userId,
       fullName: application.fullName,
+      email: application.email,
       fatherName: application.fatherName,
       motherName: application.motherName,
       state: application.permanentAddress.state,
-      city: application.permanentAddress.city,
+      city: application.permanentAddress.district,
       mobileNumber: application.mobileNumber,
       registrationFee: application.registrationFee,
       photo: application.photo,

@@ -159,7 +159,7 @@ router.post(
     { name: "signature", maxCount: 1 },
     { name: "attachedDocument", maxCount: 1 },
   ]),
-  createSupervisorApplication
+  createSupervisorApplication,
 );
 
 /**
@@ -237,7 +237,7 @@ router.patch(
   "/approve/:applicationId",
   verifyToken,
   isAdmin,
-  approveApplication
+  approveApplication,
 );
 
 /**
@@ -292,7 +292,7 @@ router.delete(
   "/delete/:applicationId",
   verifyToken,
   isAdmin,
-  deleteApplication
+  deleteApplication,
 );
 
 module.exports = router;
