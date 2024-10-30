@@ -1,4 +1,5 @@
 const Yojana = require("../models/Yojana");
+const Supervisor = require("../models/Supervisor");
 
 exports.registerYojana = async (req, res) => {
   try {
@@ -25,6 +26,25 @@ exports.registerYojana = async (req, res) => {
     } = req.body;
 
     const userId = req.user.userID;
+
+    const supervisor = await Supervisor.findOne({ userId });
+    if (!supervisor) {
+      return res.status(404).json({ message: "Supervisor not found." });
+    }
+
+    if (supervisor.balance < 10) {
+      return res
+        .status(400)
+        .json({ message: "Insufficient balance for registration." });
+    }
+
+    supervisor.balance -= 10;
+    supervisor.walletDr += 10;
+
+    supervisor.totalYojanaReg += 1;
+    supervisor.totalReg += 1;
+
+    await supervisor.save();
 
     const photo = req.files?.photo?.[0]?.filename || null;
     const signature = req.files?.signature?.[0]?.filename || null;

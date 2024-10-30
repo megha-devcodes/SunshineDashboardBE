@@ -114,6 +114,7 @@ exports.getAllApplications = async (req, res) => {
 
 exports.approveApplication = async (req, res) => {
   const { applicationId } = req.params;
+
   try {
     const application = await SupervisorApplication.findById(applicationId);
 
@@ -121,16 +122,19 @@ exports.approveApplication = async (req, res) => {
       return res.status(404).json({ message: "Application not found." });
     }
 
-    if (application.applicationStatus !== "Pending") {
+    if (application.applicationStatus === "Approved") {
       return res
         .status(400)
-        .json({ message: "Application has already been processed." });
+        .json({ message: "Application has already been approved." });
     }
 
-    const existingUser = await User.findOne({ email: application.email });
+    const existingUser = await User.findOne({
+      $or: [{ email: application.email }, { userID: application.userId }],
+    });
+
     if (existingUser) {
       return res.status(400).json({
-        message: "Duplicate email found. Cannot approve this application.",
+        message: "Duplicate user found. Cannot approve this application.",
       });
     }
 
@@ -141,7 +145,6 @@ exports.approveApplication = async (req, res) => {
       password: application.password,
       role: "supervisor",
     });
-
     await user.save();
 
     const newSupervisor = new Supervisor({
@@ -150,14 +153,13 @@ exports.approveApplication = async (req, res) => {
       email: application.email,
       fatherName: application.fatherName,
       motherName: application.motherName,
-      state: application.permanentAddress.state,
-      city: application.permanentAddress.district,
+      state: application.permanentAddress?.state,
+      city: application.permanentAddress?.district,
       mobileNumber: application.mobileNumber,
       registrationFee: application.registrationFee,
       photo: application.photo,
       joiningDate: new Date(),
     });
-
     await newSupervisor.save();
 
     application.applicationStatus = "Approved";
@@ -165,6 +167,7 @@ exports.approveApplication = async (req, res) => {
 
     res.status(200).json({ message: "Application approved successfully." });
   } catch (error) {
+    console.error("Error approving application:", error);
     res.status(500).json({ message: "Failed to approve application.", error });
   }
 };
@@ -194,8 +197,9 @@ exports.rejectApplication = async (req, res) => {
 exports.deleteApplication = async (req, res) => {
   const { applicationId } = req.params;
   try {
-    const application =
-      await SupervisorApplication.findByIdAndDelete(applicationId);
+    const application = await SupervisorApplication.findByIdAndDelete(
+      applicationId
+    );
 
     if (!application) {
       return res.status(404).json({ message: "Application not found." });
@@ -204,5 +208,52 @@ exports.deleteApplication = async (req, res) => {
     res.status(200).json({ message: "Application deleted successfully." });
   } catch (error) {
     res.status(500).json({ message: "Failed to delete application.", error });
+  }
+};
+
+exports.editApplication = async (req, res) => {
+  const { applicationId } = req.params;
+  const updates = req.body;
+
+  try {
+    const application = await SupervisorApplication.findById(applicationId);
+
+    if (!application) {
+      return res.status(404).json({ message: "Application not found." });
+    }
+
+    Object.keys(updates).forEach((field) => {
+      application[field] = updates[field];
+    });
+
+    await application.save();
+
+    res.status(200).json({
+      message: "Application updated successfully.",
+      data: application,
+    });
+  } catch (error) {
+    console.error("Error updating application:", error);
+    res.status(500).json({ message: "Failed to update application.", error });
+  }
+};
+
+exports.getApplicationById = async (req, res) => {
+  const { applicationId } = req.params;
+
+  try {
+    const application = await SupervisorApplication.findById(applicationId);
+
+    if (!application) {
+      return res.status(404).json({ message: "Application not found." });
+    }
+
+    res.status(200).json({
+      message: "Application fetched successfully.",
+      data: application,
+    });
+  } catch (error) {
+    console.error("Error fetching application:", error);
+    res.status(500).json({ message: "Failed to fetch application.", error });
   }
 };

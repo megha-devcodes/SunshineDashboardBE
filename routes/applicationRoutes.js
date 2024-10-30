@@ -6,6 +6,8 @@ const {
   rejectApplication,
   getAllApplications,
   deleteApplication,
+  getApplicationById,
+  editApplication,
 } = require("../controllers/applicationController");
 const { verifyToken, isAdmin } = require("../middleware/authMiddleware");
 const upload = require("../middleware/uploadMiddleware");
@@ -207,6 +209,134 @@ router.post(
  *         description: Failed to fetch applications
  */
 router.get("/all", verifyToken, isAdmin, getAllApplications);
+
+/**
+ * @swagger
+ * /api/application/{applicationId}:
+ *   get:
+ *     summary: Fetch a specific supervisor application (Admin only)
+ *     tags: [Supervisor Application]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: applicationId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the supervisor application to fetch
+ *     responses:
+ *       200:
+ *         description: Application fetched successfully
+ *       404:
+ *         description: Application not found
+ *       500:
+ *         description: Failed to fetch application
+ */
+router.get("/:applicationId", verifyToken, isAdmin, getApplicationById);
+
+/**
+ * @swagger
+ * /api/application/edit/{applicationId}:
+ *   patch:
+ *     summary: Edit a specific supervisor application (Admin only)
+ *     tags: [Supervisor Application]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: applicationId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the supervisor application to edit
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               fullName:
+ *                 type: string
+ *               fatherName:
+ *                 type: string
+ *               motherName:
+ *                 type: string
+ *               dob:
+ *                 type: string
+ *                 format: date
+ *               gender:
+ *                 type: string
+ *                 enum: [Male, Female, Other]
+ *               caste:
+ *                 type: string
+ *                 enum: [General, OBC, SC, ST]
+ *               mobileNumber:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               yojnaName:
+ *                 type: string
+ *                 enum: ["MAHILA SVAASTHY SURAKSHA YOJANA", "FREE SEWING MACHINE DISTRIBUTION PARIYOJNA"]
+ *               jobType:
+ *                 type: string
+ *                 enum: ["BLOCK INCHARGE"]
+ *               registrationFee:
+ *                 type: number
+ *               permanentAddress:
+ *                 type: object
+ *                 properties:
+ *                   addressLine:
+ *                     type: string
+ *                   post:
+ *                     type: string
+ *                   policeStation:
+ *                     type: string
+ *                   tehsil:
+ *                     type: string
+ *                   district:
+ *                     type: string
+ *                   state:
+ *                     type: string
+ *                   pincode:
+ *                     type: string
+ *               correspondenceAddress:
+ *                 type: object
+ *                 properties:
+ *                   addressLine:
+ *                     type: string
+ *                   post:
+ *                     type: string
+ *                   policeStation:
+ *                     type: string
+ *                   tehsil:
+ *                     type: string
+ *                   district:
+ *                     type: string
+ *                   state:
+ *                     type: string
+ *                   pincode:
+ *                     type: string
+ *               identityDocumentType:
+ *                 type: string
+ *               documentNumber:
+ *                 type: string
+ *               experienceYears:
+ *                 type: number
+ *               educationalQualification:
+ *                 type: string
+ *               preferredPanchayat:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Application updated successfully
+ *       404:
+ *         description: Application not found
+ *       500:
+ *         description: Failed to update application
+ */
+router.patch("/edit/:applicationId", verifyToken, isAdmin, editApplication);
 
 /**
  * @swagger
