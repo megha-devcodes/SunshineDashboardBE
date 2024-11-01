@@ -29,8 +29,46 @@ exports.getSupervisorProfile = async (req, res) => {
 
 exports.getAllSupervisors = async (req, res) => {
   try {
-    const supervisors = await Supervisor.find();
-    res.status(200).json(supervisors);
+    const {
+      page = 1,
+      limit = 10,
+      search = "",
+      sortBy = "createdAt",
+      order = "asc",
+    } = req.query;
+
+    const pageNumber = parseInt(page, 10);
+    const pageSize = parseInt(limit, 10);
+
+    const searchCriteria = search
+      ? {
+          $or: [
+            { fullName: { $regex: search, $options: "i" } },
+            { email: { $regex: search, $options: "i" } },
+            { city: { $regex: search, $options: "i" } },
+            { state: { $regex: search, $options: "i" } },
+            { userId: { $regex: search, $options: "i" } },
+          ],
+        }
+      : {};
+
+    const total = await Supervisor.countDocuments(searchCriteria);
+
+    const sortOrder = order === "desc" ? -1 : 1;
+    const sortCriteria = { [sortBy]: sortOrder };
+
+    const supervisors = await Supervisor.find(searchCriteria)
+      .sort(sortCriteria)
+      .skip((pageNumber - 1) * pageSize)
+      .limit(pageSize)
+      .lean();
+
+    res.status(200).json({
+      total,
+      page: pageNumber,
+      pages: Math.ceil(total / pageSize),
+      data: supervisors,
+    });
   } catch (error) {
     console.error("Error fetching all supervisors:", error.message);
     res.status(500).json({ message: "Server error", error });
@@ -74,7 +112,7 @@ exports.updateSupervisor = async (req, res) => {
 
   if (!isAdmin) {
     const invalidFields = Object.keys(updates).filter(
-      (field) => !allowedFieldsForSupervisor.includes(field),
+      (field) => !allowedFieldsForSupervisor.includes(field)
     );
     if (invalidFields.length > 0) {
       return res.status(403).json({
@@ -86,7 +124,7 @@ exports.updateSupervisor = async (req, res) => {
 
   if (isAdmin) {
     const invalidAdminFields = Object.keys(updates).filter((field) =>
-      restrictedFieldsForAdmin.includes(field),
+      restrictedFieldsForAdmin.includes(field)
     );
     if (invalidAdminFields.length > 0) {
       return res.status(403).json({
@@ -193,7 +231,7 @@ exports.updateSupervisorById = async (req, res) => {
   const updates = req.body;
 
   const invalidFields = Object.keys(updates).filter((field) =>
-    restrictedFieldsForAdmin.includes(field),
+    restrictedFieldsForAdmin.includes(field)
   );
 
   if (invalidFields.length > 0) {

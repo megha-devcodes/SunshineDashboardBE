@@ -95,19 +95,59 @@ const router = express.Router();
  * /api/supervisors:
  *   get:
  *     summary: Get all supervisors (Admin only)
- *     description: Fetches all supervisors. Only accessible by admins.
+ *     description: Fetches all supervisors with optional pagination, search, and sorting. Only accessible by admins.
  *     tags: [Supervisors]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Number of supervisors per page
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search term to filter supervisors by userId, fullName, email, city, or state
+ *       - in: query
+ *         name: sortBy
+ *         schema:
+ *           type: string
+ *           default: createdAt
+ *         description: Field to sort by (e.g., userId, fullName, email, createdAt)
+ *       - in: query
+ *         name: order
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *           default: asc
+ *         description: Sort order, either ascending (asc) or descending (desc)
  *     responses:
  *       200:
- *         description: List of all supervisors
+ *         description: List of all supervisors with pagination, search, and sorting applied
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Supervisor'
+ *               type: object
+ *               properties:
+ *                 total:
+ *                   type: integer
+ *                 page:
+ *                   type: integer
+ *                 pages:
+ *                   type: integer
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Supervisor'
  *       403:
  *         description: Access denied
  *       500:
