@@ -20,12 +20,20 @@ exports.generateCredentials = async (req, res) => {
 exports.createSupervisorApplication = async (req, res) => {
   try {
     const {
+      userID,
+      password,
       fullName,
       email,
       permanentAddress,
       correspondenceAddress,
       ...applicationData
     } = req.body;
+
+    if (!userID || !password) {
+      return res
+        .status(400)
+        .json({ message: "userID and password are required." });
+    }
 
     const parsedPermanentAddress =
       typeof permanentAddress === "string"
@@ -43,7 +51,6 @@ exports.createSupervisorApplication = async (req, res) => {
         .json({ message: "This email is already registered." });
     }
 
-    const { userID, password } = await UserFactory.generateCredentials();
     const hashedPassword = await bcrypt.hash(password, 12);
 
     const photo = req.files?.photo?.[0]?.filename || null;

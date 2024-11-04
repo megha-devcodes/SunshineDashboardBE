@@ -47,7 +47,16 @@ router.get("/generate-credentials", generateCredentials);
  *         multipart/form-data:
  *           schema:
  *             type: object
+ *             required:
+ *               - userID
+ *               - password
  *             properties:
+ *               userID:
+ *                 type: string
+ *                 description: Generated user ID
+ *               password:
+ *                 type: string
+ *                 description: Generated password
  *               fullName:
  *                 type: string
  *                 description: Full name of the applicant
