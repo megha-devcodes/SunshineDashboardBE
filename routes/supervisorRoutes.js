@@ -12,6 +12,7 @@ const {
   generateApplicationPDF,
 } = require("../controllers/applicationPDFController");
 const { verifyToken, isAdmin } = require("../middleware/authMiddleware");
+const upload = require("../middleware/uploadMiddleware");
 
 const router = express.Router();
 
@@ -192,9 +193,26 @@ router.get("/profile", verifyToken, getSupervisorProfile);
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
- *             $ref: '#/components/schemas/Supervisor'
+ *             type: object
+ *             properties:
+ *               mobileNumber:
+ *                 type: string
+ *               photo:
+ *                 type: string
+ *                 format: binary
+ *               professionalInfo:
+ *                 type: object
+ *                 properties:
+ *                   mondalName:
+ *                     type: string
+ *                   departmentName:
+ *                     type: string
+ *                   workingArea:
+ *                     type: string
+ *                   workingCity:
+ *                     type: string
  *     responses:
  *       200:
  *         description: Supervisor profile updated successfully
@@ -205,7 +223,12 @@ router.get("/profile", verifyToken, getSupervisorProfile);
  *       500:
  *         description: Server error
  */
-router.put("/profile/update", verifyToken, updateSupervisor);
+router.put(
+  "/profile/update",
+  verifyToken,
+  upload.single("photo"),
+  updateSupervisor
+);
 
 /**
  * @swagger
@@ -243,7 +266,7 @@ router.get("/:userId", verifyToken, isAdmin, getSupervisorById);
  * /api/supervisors/{userId}:
  *   put:
  *     summary: Update a specific supervisor by their userID (Admin only)
- *     description: Updates details of a specific supervisor using their userID. Accessible by Admins only.
+ *     description: Updates details of a specific supervisor using their userID. Allows Admins to upload a new photo and update other details.
  *     tags: [Supervisors]
  *     security:
  *       - bearerAuth: []
@@ -257,9 +280,48 @@ router.get("/:userId", verifyToken, isAdmin, getSupervisorById);
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
- *             $ref: '#/components/schemas/Supervisor'
+ *             type: object
+ *             properties:
+ *               fullName:
+ *                 type: string
+ *               fatherName:
+ *                 type: string
+ *               motherName:
+ *                 type: string
+ *               state:
+ *                 type: string
+ *               city:
+ *                 type: string
+ *               mobileNumber:
+ *                 type: string
+ *               photo:
+ *                 type: string
+ *                 format: binary
+ *               registrationFee:
+ *                 type: number
+ *                 default: 1000
+ *               totalInternReg:
+ *                 type: number
+ *                 default: 0
+ *               totalYojanaReg:
+ *                 type: number
+ *                 default: 0
+ *               totalReg:
+ *                 type: number
+ *                 default: 0
+ *               professionalInfo:
+ *                 type: object
+ *                 properties:
+ *                   mondalName:
+ *                     type: string
+ *                   departmentName:
+ *                     type: string
+ *                   workingArea:
+ *                     type: string
+ *                   workingCity:
+ *                     type: string
  *     responses:
  *       200:
  *         description: Supervisor updated successfully
@@ -270,7 +332,13 @@ router.get("/:userId", verifyToken, isAdmin, getSupervisorById);
  *       500:
  *         description: Failed to update supervisor
  */
-router.put("/:userId", verifyToken, isAdmin, updateSupervisorById);
+router.put(
+  "/:userId",
+  verifyToken,
+  isAdmin,
+  upload.single("photo"),
+  updateSupervisorById
+);
 
 /**
  * @swagger

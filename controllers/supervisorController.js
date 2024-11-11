@@ -107,8 +107,24 @@ exports.updateSupervisor = async (req, res) => {
     "userId",
   ];
   const isAdmin = req.user.role === "admin";
-
   const updates = req.body;
+
+  if (req.file) {
+    updates.photo = req.file.path;
+  }
+
+  if (
+    updates.professionalInfo &&
+    typeof updates.professionalInfo === "string"
+  ) {
+    try {
+      updates.professionalInfo = JSON.parse(updates.professionalInfo);
+    } catch (error) {
+      return res
+        .status(400)
+        .json({ message: "Invalid format for professionalInfo" });
+    }
+  }
 
   if (!isAdmin) {
     const invalidFields = Object.keys(updates).filter(
@@ -230,6 +246,10 @@ exports.updateSupervisorById = async (req, res) => {
 
   const updates = req.body;
 
+  if (req.file) {
+    updates.photo = req.file.path;
+  }
+
   const invalidFields = Object.keys(updates).filter((field) =>
     restrictedFieldsForAdmin.includes(field)
   );
@@ -239,6 +259,19 @@ exports.updateSupervisorById = async (req, res) => {
       message:
         "Credits and commission must be updated using the dedicated credits API.",
     });
+  }
+
+  if (
+    updates.professionalInfo &&
+    typeof updates.professionalInfo === "string"
+  ) {
+    try {
+      updates.professionalInfo = JSON.parse(updates.professionalInfo);
+    } catch (error) {
+      return res
+        .status(400)
+        .json({ message: "Invalid format for professionalInfo" });
+    }
   }
 
   try {
